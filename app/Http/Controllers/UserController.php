@@ -81,9 +81,9 @@ class UserController extends Controller
 
         $user = Auth::user();
         if ($user->hasRole('superadmin')) {
-            return redirect()->route('dashboard');
-        } elseif ($user->hasRole('user')) {
-            return redirect()->route('product');
+            return redirect()->route('list-product');
+        // } elseif ($user->hasRole('user')) {
+        //     return redirect()->route('product');
         }
 
         }   else {
@@ -109,5 +109,34 @@ class UserController extends Controller
         Auth::logout();
 
         return redirect()->route('login');
+    }
+
+     public function redirectToGoogle()
+    {
+        return Socialite::driver('google')->redirect();
+    }
+
+    public function handleGoogleCallback()
+    {
+        try {
+            $googleUser = Socialite::driver('google')->user();
+            $user = User::where('email', $googleUser->getEmail())->first();
+
+            if ($user) {
+                Auth::login($user);
+            } else {
+                $user = User::create([
+                    'name' => $googleUser->getName(),
+                    'email' => $googleUser->getEmail(),
+                    'password' => Hash::make(uniqid()), // Password acak
+                ]);
+
+                Auth::login($user);
+            }
+
+            return redirect()->route('dashboard');
+        } catch (\Exception $e) {
+            return redirect()->route('login')->with('error', 'Terjadi kesalahan saat login dengan Google');
+        }
     }
 }

@@ -17,8 +17,8 @@ class AuthMiddleware
     public function handle(Request $request, Closure $next): Response
     {
         if (!Auth::user()) {
-            abort(403, 'Unauthorized access');
-            // return redirect()->route('login');
+            // abort(403, 'Unauthorized access');
+            return redirect()->route('login');
         }
         return $next($request);
     }

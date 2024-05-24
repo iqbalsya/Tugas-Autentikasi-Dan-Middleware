@@ -1,23 +1,27 @@
 <?php
-
-use App\Http\Controllers\ProductController;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\FormController;
+use App\Http\Controllers\HomeController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\ProductController;
 
-Route::get('/', function () {
-    //return view('welcome');
+Route::get('/home', [HomeController::class, 'index'])->name('home.index');
 
-    //$resEncrypt = encrypt('Password123', true);
-    //dd($resEncrypt);
-    // eyJpdiI6IkR6WGhrV205bTVnMGFyakd2ZEhEenc9PSIsInZhbHVlIjoieU9VYys3YWdGeEdML0NBRWxXN0ZTZUZ4cDFYVUxxdGJDUHpOeDFoSmVzaz0iLCJtYWMiOiJlOWVhMzY2MTgyNmViYTk2MTBiYWQ3Zjc1NDExMDZmMWU2MjM5ZTVjYjM5MzA2MWUwZDIyNmNiMmNkZjA4ODE3IiwidGFnIjoiIn0=
-    //$resDecrypt = decrypt('eyJpdiI6IkR6WGhrV205bTVnMGFyakd2ZEhEenc9PSIsInZhbHVlIjoieU9VYys3YWdGeEdML0NBRWxXN0ZTZUZ4cDFYVUxxdGJDUHpOeDFoSmVzaz0iLCJtYWMiOiJlOWVhMzY2MTgyNmViYTk2MTBiYWQ3Zjc1NDExMDZmMWU2MjM5ZTVjYjM5MzA2MWUwZDIyNmNiMmNkZjA4ODE3IiwidGFnIjoiIn0=', true);
-    //dd($resDecrypt);
+Route::get('/products/{id}', [ProductController::class, 'show'])->name('product.show');
 
-    $pass = 'Password123';
-    $hashPass = Hash::make('Password1234');
-    dd(Hash::check($pass, $hashPass));
-});
+Route::get('/checkout/{id}', [ProductController::class, 'checkout'])->name('checkout');
+
+Route::post('/process-checkout/{id}', [ProductController::class, 'processCheckout'])->name('processCheckout');
+
+Route::get('/product', [ProductController::class, 'index'])->name('product.index');
+
+Route::get('/form', [FormController::class, 'index'])->name('form.index');
+
+Route::get('/tambah-produk', [ProductController::class, 'create'])->name('product.create');
+
+Route::get('/form/{id}', [ProductController::class, 'edit'])->name('product.edit');
+
+Route::put('/form/{id}', [ProductController::class, 'update'])->name('product.update');
 
 Route::get('/register', [UserController::class, 'register'])->name('register');
 Route::post('/register-user', [UserController::class, 'registerUser'])->name('register_user');
@@ -25,23 +29,15 @@ Route::get('/login', [UserController::class, 'login'])->name('login');
 Route::post('/login', [UserController::class, 'loginUser'])->name('login_user');
 Route::get('/logout', [UserController::class, 'logout'])->name('logout');
 
-Route::get('/dashboard', [UserController::class, 'dashboard'])->name('dashboard');
+Route::get('auth/google', [LoginController::class, 'redirectToGoogle'])->name('auth.google');
 
-// Route::get('/dashboard', [UserController::class, 'dashboard'])
-//     ->name('dashboard')
-//     ->middleware(['authenticate', 'role:superadmin']);
+Route::get('auth/google/callback', [LoginController::class, 'handleGoogleCallback']);
 
-// Route::get('/product', [ProductController::class, 'index'])
-//     ->name('product')
-//     ->middleware('role:user');
+Route::post('/products/import', [ProductController::class, 'import'])->name('product.import');
 
-Route::middleware(['auth'])->group(function ()
-{
-    Route::get('/product', [ProductController::class, 'index'])
-    ->name('product')
-    ->middleware('role:user');
-
-    Route::get('/user-management', [UserController::class, 'dashboard'])
-    ->name('dashboard')
-    ->middleware('role:superadmin');
+Route::middleware(['auth', 'role:superadmin'])->group(function () {
+    Route::post('/admin/list-product', [ProductController::class, 'store'])->name('product.store');
+    Route::delete('/admin/list-product/{id}', [ProductController::class, 'destroy'])->name('product.destroy');
+    Route::get('/{id}/tambah_product', [ProductController::class, 'create'])->name('product.create');
+    Route::post('/admin/list-product', [ProductController::class, 'store'])->name('product.create');
 });
